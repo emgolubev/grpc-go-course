@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/emgolubev/grpc-go-course/calculator/calculatorpb"
 
@@ -27,7 +28,7 @@ func main() {
 
 	// doPND(c)
 
-	doComputeAverage(c)
+	doFindMax(c)
 
 }
 
@@ -45,6 +46,46 @@ func doComputeAverage(c calculatorpb.CalculatorServiceClient) {
 	res, _ := stream.CloseAndRecv()
 
 	fmt.Printf("Success compute average request: %v", res.GetResult())
+}
+
+func doFindMax(c calculatorpb.CalculatorServiceClient) {
+	stream, _ := c.FindMax(context.Background())
+
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, num := range os.Args[1:] {
+			i, _ := strconv.Atoi(num)
+			req := &calculatorpb.OneIntRequest{
+				Number: int32(i),
+			}
+			stream.Send(req)
+			fmt.Printf("Sent to server: %v\n", req)
+			time.Sleep(1000 * time.Millisecond)
+		}
+
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			req, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				break
+			}
+
+			fmt.Printf("The current max: %d\n", req.GetNumber())
+		}
+
+		close(waitc)
+	}()
+
+	<-waitc
 }
 
 func doPND(c calculatorpb.CalculatorServiceClient) {

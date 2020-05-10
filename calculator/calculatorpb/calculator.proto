@@ -26,8 +26,17 @@ message AverageResponse {
     float result = 1;
 }
 
+message OneIntRequest {
+    int32 number = 1;
+}
+
+message OneIntResponse {
+    int32 number = 1;
+}
+
 service CalculatorService { 
     rpc Sum(SumRequest) returns (SumResponse); 
     rpc PrimeNumberDecomposition(PNDRequest) returns (stream PNDResponse);
     rpc ComputeAverage(stream AverageRequest) returns (AverageResponse);
+    rpc FindMax(stream OneIntRequest) returns (stream OneIntResponse);
 }
