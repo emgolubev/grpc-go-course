@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "calculator/calculatorpb";
+
+message NumbersList { repeated int32 list = 1; }
+
+message SumRequest { NumbersList numbers = 1; }
+
+message SumResponse { int32 result = 1; }
+
+message PNDRequest {
+    int32 number = 1;
+}
+
+message PNDResponse {
+    int32 result = 1;
+}
+
+message AverageRequest {
+    int32 number = 1;
+}
+
+message AverageResponse {
+    float result = 1;
+}
+
+service CalculatorService { 
+    rpc Sum(SumRequest) returns (SumResponse); 
+    rpc PrimeNumberDecomposition(PNDRequest) returns (stream PNDResponse);
+    rpc ComputeAverage(stream AverageRequest) returns (AverageResponse);
+}
