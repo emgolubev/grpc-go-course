@@ -79,11 +79,10 @@ func (*server) FindMax(stream calculatorpb.CalculatorService_FindMaxServer) erro
 
 		if msg.GetNumber() > maximum {
 			maximum = msg.GetNumber()
+			stream.Send(&calculatorpb.OneIntResponse{
+				Number: maximum,
+			})
 		}
-
-		stream.Send(&calculatorpb.OneIntResponse{
-			Number: maximum,
-		})
 
 	}
 }
