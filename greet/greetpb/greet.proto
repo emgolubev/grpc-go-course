@@ -21,4 +21,7 @@ service GreetService {
 
   // client streaming
   rpc LongGreet(stream GreetRequest) returns (GreetResponse) {};
+
+  // BiDi
+  rpc GreetEveryone(stream GreetRequest) returns (stream GreetResponse) {};
 }

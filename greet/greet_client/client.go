@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/emgolubev/grpc-go-course/greet/greetpb"
 
@@ -27,7 +28,9 @@ func main() {
 
 	// doServerStreaming(c)
 
-	doClientStreaming(c)
+	// doClientStreaming(c)
+
+	doBiDiStreaming(c)
 
 }
 
@@ -104,4 +107,55 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 
 	fmt.Printf("Success client stream request: %v", res.GetResult())
 
+}
+
+func doBiDiStreaming(c greetpb.GreetServiceClient) {
+	stream, _ := c.GreetEveryone(context.Background())
+
+	waitc := make(chan struct{})
+
+	requests := []*greetpb.GreetRequest{
+		&greetpb.GreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Eugene",
+				LastName:  "Golubev",
+			},
+		},
+		&greetpb.GreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Oxana",
+				LastName:  "Golubeva",
+			},
+		},
+	}
+
+	go func() {
+		for _, req := range requests {
+			stream.Send(req)
+			time.Sleep(1000 * time.Millisecond)
+		}
+
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			req, err := stream.Recv()
+
+			if err == io.EOF {
+				fmt.Println("Close client stream")
+				break
+			}
+
+			if err != nil {
+				break
+			}
+
+			fmt.Printf("Success greet everyone: %v\n", req.GetResult())
+		}
+
+		close(waitc)
+	}()
+
+	<-waitc
 }
