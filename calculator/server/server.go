@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"sort"
 
 	"github.com/emgolubev/grpc-go-course/calculator/calculatorpb"
 
@@ -69,7 +68,7 @@ func (*server) ComputeAverage(stream calculatorpb.CalculatorService_ComputeAvera
 }
 
 func (*server) FindMax(stream calculatorpb.CalculatorService_FindMaxServer) error {
-	numbers := []int{}
+	maximum := int32(0)
 
 	for {
 		msg, err := stream.Recv()
@@ -78,12 +77,12 @@ func (*server) FindMax(stream calculatorpb.CalculatorService_FindMaxServer) erro
 			return nil
 		}
 
-		numbers = append(numbers, int(msg.GetNumber()))
-
-		sort.Ints(numbers)
+		if msg.GetNumber() > maximum {
+			maximum = msg.GetNumber()
+		}
 
 		stream.Send(&calculatorpb.OneIntResponse{
-			Number: int32(numbers[len(numbers)-1]),
+			Number: maximum,
 		})
 
 	}
