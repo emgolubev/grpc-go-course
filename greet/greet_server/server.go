@@ -9,9 +9,12 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/codes"
+
 	"github.com/emgolubev/grpc-go-course/greet/greetpb"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 type server struct{}
@@ -84,6 +87,24 @@ func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) er
 			return sErr
 		}
 	}
+}
+
+func (*server) GreetWithDeadline(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+	fmt.Printf("Greet method was invoked with %v", req)
+
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			fmt.Println("client canceled the request")
+			return nil, status.Error(codes.Canceled, "Client canceled the request")
+		}
+		time.Sleep(time.Second)
+	}
+
+	firstName := req.GetGreeting().GetFirstName()
+	result := "Hello " + firstName
+	response := &greetpb.GreetResponse{Result: result}
+
+	return response, nil
 }
 
 func main() {

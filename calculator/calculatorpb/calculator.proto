@@ -34,9 +34,21 @@ message OneIntResponse {
     int32 number = 1;
 }
 
+message SquareRootRequest {
+    int32 number = 1;
+}
+
+message SquareRootResponse {
+    double number_root = 1;
+} 
+
 service CalculatorService { 
     rpc Sum(SumRequest) returns (SumResponse); 
     rpc PrimeNumberDecomposition(PNDRequest) returns (stream PNDResponse);
     rpc ComputeAverage(stream AverageRequest) returns (AverageResponse);
     rpc FindMax(stream OneIntRequest) returns (stream OneIntResponse);
+
+    // error handling
+    // this RPC will throw an exception id number is negative
+    rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {};
 }

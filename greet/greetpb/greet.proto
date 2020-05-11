@@ -24,4 +24,7 @@ service GreetService {
 
   // BiDi
   rpc GreetEveryone(stream GreetRequest) returns (stream GreetResponse) {};
+
+  // Unary Deadline
+  rpc GreetWithDeadline(GreetRequest) returns (GreetResponse) {};
 }

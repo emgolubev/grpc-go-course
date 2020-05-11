@@ -9,9 +9,12 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/codes"
+
 	"github.com/emgolubev/grpc-go-course/calculator/calculatorpb"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -28,7 +31,9 @@ func main() {
 
 	// doPND(c)
 
-	doFindMax(c)
+	// doFindMax(c)
+
+	doErrorUnary(c)
 
 }
 
@@ -136,4 +141,39 @@ func doSum(c calculatorpb.CalculatorServiceClient) {
 	}
 
 	fmt.Printf("Sum of %v is %d", numbers, res.Result)
+}
+
+func doErrorUnary(c calculatorpb.CalculatorServiceClient) {
+	// correct call
+	doErrorCall(c, 10)
+
+	// error call
+	doErrorCall(c, -32)
+}
+
+func doErrorCall(c calculatorpb.CalculatorServiceClient, n int32) error {
+	res, err := c.SquareRoot(context.Background(), &calculatorpb.SquareRootRequest{
+		Number: n,
+	})
+
+	if err != nil {
+		s, ok := status.FromError(err)
+
+		if ok {
+			// actual error from gRPC
+			fmt.Println(s.Message())
+			fmt.Println(s.Code())
+			if s.Code() == codes.InvalidArgument {
+				fmt.Println("We probably sent a negative number!")
+			}
+		} else {
+			log.Fatalf("Big error while SquareRoot: %v", s)
+		}
+
+		return err
+	}
+
+	fmt.Printf("square root from 10 = %f\n", res.GetNumberRoot())
+
+	return nil
 }
